@@ -1,0 +1,20 @@
+[package]
+name = "path-planning"
+version = "0.1.0"
+authors = ["Travis Sturzl <tsturzl@lefthandrobotics.com>"]
+edition = "2018"
+
+[lib]
+name = "path_planning"
+crate-type = ["cdylib"]
+
+[profile.release]
+lto = true
+
+[dependencies]
+pathplanning = { path = "../rs-pathplanning" }
+geo = "0.12.2"
+
+[dependencies.pyo3]
+version = "0.9.0-alpha.1"
+features = ["extension-module"]
