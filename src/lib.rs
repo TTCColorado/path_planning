@@ -4,7 +4,6 @@ use pathplanning::rrt;
 use pyo3::exceptions;
 use pyo3::prelude::*;
 use pyo3::wrap_pyfunction;
-use std::thread;
 
 #[pyclass(module = "path_planning")]
 struct SpaceConf {
