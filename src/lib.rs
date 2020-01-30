@@ -1,7 +1,10 @@
-use geo::{LineString, Polygon};
+use geo::algorithm::simplify::Simplify;
+use geo::{LineString, Point, Polygon};
 use pathplanning::rrt;
 use pyo3::exceptions;
 use pyo3::prelude::*;
+use pyo3::wrap_pyfunction;
+use std::thread;
 
 #[pyclass(module = "path_planning")]
 struct SpaceConf {
@@ -89,17 +92,29 @@ impl RRTDubinsPlanner {
             space,
         );
 
-        let result = py.allow_threads(move || planner.plan());
+        // let result = py.allow_threads(move || planner.plan());
+        let result = planner.plan();
 
         match result {
-            Some(path) => Ok(path.points_iter().map(|p| p.x_y()).collect()),
+            Some(path) => Ok(path
+                // .simplify(&0.01)
+                .points_iter()
+                .map(|p| p.x_y())
+                .collect()),
             None => Err(exceptions::Exception::py_err("Could not generate path")),
         }
     }
 }
 
+#[pyfunction]
+fn create_circle(xy: (f64, f64), r: f64) -> Vec<(f64, f64)> {
+    let circle = rrt::create_circle(Point::from(xy), r);
+    circle.exterior().points_iter().map(|p| p.x_y()).collect()
+}
+
 #[pymodule]
 fn path_planning(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
+    m.add_wrapped(wrap_pyfunction!(create_circle))?;
     m.add_class::<RobotConf>()?;
     m.add_class::<SpaceConf>()?;
     m.add_class::<RRTDubinsPlanner>()?;
