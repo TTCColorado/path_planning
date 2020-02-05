@@ -171,7 +171,7 @@ dependencies = [
  "failure",
  "geo-types",
  "num-traits",
- "rstar",
+ "rstar 0.2.0",
 ]
 
 [[package]]
@@ -203,7 +203,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "866e8f6dbd2218b05ea8a25daa1bfac32b0515fe7e0a37cb6a7b9ed0ed82a07e"
 dependencies = [
  "num-traits",
- "rstar",
+ "rstar 0.2.0",
 ]
 
 [[package]]
@@ -415,6 +415,7 @@ dependencies = [
  "geo-offset",
  "rand",
  "rayon",
+ "rstar 0.7.1",
 ]
 
 [[package]]
@@ -600,6 +601,16 @@ dependencies = [
  "num-traits",
  "pdqselect",
  "threadpool",
+]
+
+[[package]]
+name = "rstar"
+version = "0.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0650eaaa56cbd1726fd671150fce8ac6ed9d9a25d1624430d7ee9d196052f6b6"
+dependencies = [
+ "num-traits",
+ "pdqselect",
 ]
 
 [[package]]

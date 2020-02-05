@@ -3,3 +3,11 @@ import concurrent.futures
 import asyncio
 
 __all__ = ["SpaceConf", "RobotConf", "RRTDubinsPlanner", "create_circle"]
+
+
+async def plan_async(planner):
+    future = planner.plan()
+    while True:
+        n = future.check()
+        if future.is_done(n):
+            return future.finalize(n)
