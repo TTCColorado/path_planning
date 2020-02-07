@@ -26,3 +26,5 @@ extensions/stamps/
 pip-wheel-metadata
 valgrind-python.supp
 tags
+tags.lock
+tags.temp
