@@ -12,7 +12,7 @@ crate-type = ["cdylib"]
 lto = true
 
 [dependencies]
-pathplanning = { path = "../rs-pathplanning" }
+pathplanning = { path = "./rs-pathplanning" }
 geo = "0.12.2"
 
 [dependencies.pyo3]

@@ -80,7 +80,7 @@ setup(
         "Operating System :: POSIX",
     ],
     packages=["path_planning"],
-    rust_extensions=[RustExtension("path_planning.path_planning", "Cargo.toml", debug=True)],
+    rust_extensions=[RustExtension("path_planning.path_planning", "Cargo.toml", debug=False)],
     install_requires=install_requires,
     tests_require=tests_require,
     setup_requires=setup_requires,
