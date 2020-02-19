@@ -4,7 +4,7 @@ use pathplanning::rrt;
 use pyo3::exceptions;
 use pyo3::prelude::*;
 use pyo3::wrap_pyfunction;
-use std::sync::mpsc::{channel, Receiver, TryRecvError};
+use std::sync::mpsc::{channel, Receiver, Sender, TryRecvError};
 use std::sync::Arc;
 use std::thread;
 
@@ -43,12 +43,13 @@ impl RobotConf {
 
 #[pyclass(module = "path_planning")]
 struct PlannerFuture {
+    tx: Sender<Option<Vec<(f64, f64)>>>,
     rx: Receiver<Option<Vec<(f64, f64)>>>,
 }
 
 impl PlannerFuture {
-    fn new(rx: Receiver<Option<Vec<(f64, f64)>>>) -> Self {
-        PlannerFuture { rx }
+    fn new(tx: Sender<Option<Vec<(f64, f64)>>>, rx: Receiver<Option<Vec<(f64, f64)>>>) -> Self {
+        PlannerFuture { tx, rx }
     }
 }
 
@@ -118,7 +119,7 @@ impl RRTDubinsPlanner {
         }
     }
 
-    fn plan(&self, py: Python<'_>) -> PyResult<PlannerFuture> {
+    fn plan_async(&self) -> PyResult<PlannerFuture> {
         let robot = rrt::Robot::new(self.robot.width, self.robot.height, self.robot.max_steer);
         let bounds = Polygon::new(LineString::from(self.space.bounds.clone()), vec![]);
         let obs: Vec<Polygon<f64>> = self
@@ -139,6 +140,7 @@ impl RRTDubinsPlanner {
         ));
 
         let (tx, rx) = channel();
+        let tx_moved = tx.clone();
         thread::spawn(move || {
             let result = match planner.plan() {
                 Some(path) => Some(
@@ -150,10 +152,42 @@ impl RRTDubinsPlanner {
                 ),
                 None => None,
             };
-            tx.send(result);
+            tx_moved
+                .send(result)
+                .expect("Should send result over channel");
         });
 
-        Ok(PlannerFuture::new(rx))
+        Ok(PlannerFuture::new(tx, rx))
+    }
+
+    fn plan(&self) -> PyResult<Vec<(f64, f64)>> {
+        let robot = rrt::Robot::new(self.robot.width, self.robot.height, self.robot.max_steer);
+        let bounds = Polygon::new(LineString::from(self.space.bounds.clone()), vec![]);
+        let obs: Vec<Polygon<f64>> = self
+            .space
+            .obstacles
+            .iter()
+            .map(|o| Polygon::new(LineString::from(o.clone()), vec![]))
+            .collect();
+        let space = rrt::Space::new(bounds, robot, obs);
+        let planner = Arc::new(rrt::RRT::new(
+            self.start.into(),
+            self.start_yaw,
+            self.goal.into(),
+            self.goal_yaw,
+            self.max_iter,
+            self.step_size,
+            space,
+        ));
+
+        match planner.plan() {
+            Some(path) => Ok(path
+                // .simplify(&0.01)
+                .points_iter()
+                .map(|p| p.x_y())
+                .collect()),
+            None => Err(exceptions::Exception::py_err("Planner failed to find path")),
+        }
     }
 }
 
