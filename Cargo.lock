@@ -400,7 +400,7 @@ dependencies = [
 
 [[package]]
 name = "path-planning"
-version = "0.1.0"
+version = "0.1.4"
 dependencies = [
  "geo",
  "pathplanning",
@@ -409,7 +409,7 @@ dependencies = [
 
 [[package]]
 name = "pathplanning"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "geo",
  "geo-offset",
