@@ -8,6 +8,7 @@ use std::sync::mpsc::{channel, Receiver, Sender, TryRecvError};
 use std::sync::Arc;
 use std::thread;
 
+#[derive(Clone, Copy)]
 #[pyclass(module = "path_planning")]
 struct SpaceConf {
     bounds: Vec<(f64, f64)>,
@@ -22,6 +23,7 @@ impl SpaceConf {
     }
 }
 
+#[derive(Clone, Copy)]
 #[pyclass(module = "path_planning")]
 struct RobotConf {
     width: f64,
@@ -90,8 +92,8 @@ struct RRTDubinsPlanner {
     goal_yaw: f64,
     max_iter: usize,
     step_size: f64,
-    space: &'static SpaceConf,
-    robot: &'static RobotConf,
+    space: SpaceConf,
+    robot: RobotConf,
 }
 
 #[pymethods]
@@ -104,8 +106,8 @@ impl RRTDubinsPlanner {
         goal_yaw: f64,
         max_iter: usize,
         step_size: f64,
-        space: &'static SpaceConf,
-        robot: &'static RobotConf,
+        space: SpaceConf,
+        robot: RobotConf,
     ) -> Self {
         RRTDubinsPlanner {
             start,
