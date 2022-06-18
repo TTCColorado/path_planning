@@ -8,7 +8,7 @@ use std::sync::mpsc::{channel, Receiver, Sender, TryRecvError};
 use std::sync::Arc;
 use std::thread;
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 #[pyclass(module = "path_planning")]
 struct SpaceConf {
     bounds: Vec<(f64, f64)>,
@@ -62,7 +62,7 @@ impl PlannerFuture {
             Ok(result) => Ok(result),
             Err(e) => match e {
                 TryRecvError::Empty => Ok(None),
-                TryRecvError::Disconnected => Err(exceptions::Exception::py_err(
+                TryRecvError::Disconnected => Err(exceptions::PyException::new_err(
                     "Channel to worker thread disconnected",
                 )),
             },
@@ -79,7 +79,7 @@ impl PlannerFuture {
     fn finalize(&self, result: Option<Vec<(f64, f64)>>) -> PyResult<Vec<(f64, f64)>> {
         match result {
             Some(r) => Ok(r),
-            None => Err(exceptions::Exception::py_err("Planner failed to find path")),
+            None => Err(exceptions::PyException::new_err("Planner failed to find path")),
         }
     }
 }
@@ -148,7 +148,7 @@ impl RRTDubinsPlanner {
                 Some(path) => Some(
                     path
                         // .simplify(&0.01)
-                        .points_iter()
+                        .points()
                         .map(|p| p.x_y())
                         .collect(),
                 ),
@@ -185,10 +185,10 @@ impl RRTDubinsPlanner {
         match planner.plan() {
             Some(path) => Ok(path
                 // .simplify(&0.01)
-                .points_iter()
+                .points()
                 .map(|p| p.x_y())
                 .collect()),
-            None => Err(exceptions::Exception::py_err("Planner failed to find path")),
+            None => Err(exceptions::PyException::new_err("Planner failed to find path")),
         }
     }
 }
@@ -196,14 +196,14 @@ impl RRTDubinsPlanner {
 #[pyfunction]
 fn create_circle(xy: (f64, f64), r: f64) -> Vec<(f64, f64)> {
     let circle = rrt::create_circle(Point::from(xy), r);
-    circle.exterior().points_iter().map(|p| p.x_y()).collect()
+    circle.exterior().points().map(|p| p.x_y()).collect()
 }
 
 #[pyfunction]
 fn simplify(points: Vec<(f64, f64)>, e: f64) -> Vec<(f64, f64)> {
     let p = points.into_iter().map(|p| p.into()).collect();
     let line = LineString(p);
-    line.simplify(&e).points_iter().map(|p| p.x_y()).collect()
+    line.simplify(&e).points().map(|p| p.x_y()).collect()
 }
 
 #[pymodule]

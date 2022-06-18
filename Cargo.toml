@@ -13,8 +13,8 @@ lto = true
 
 [dependencies]
 pathplanning = { path = "./rs-pathplanning" }
-geo = "0.12.2"
+geo = "0.18.0"
 
 [dependencies.pyo3]
-version = "0.9.0-alpha.1"
+version = "0.13.0"
 features = ["extension-module"]
